@@ -1,0 +1,31 @@
+doctype html
+html
+	head
+		title Teste
+		link(href="css/bootstrap.min.css" rel="stylesheet" type="text/css")
+		link(href="css/main.css" rel="stylesheet" type="text/css")
+	body
+		.container
+			h1.text-primary.text-center Game running with ID: #{id}
+			.row
+				.col-md-12
+					canvas#viewport(width="256px", height="224px")
+					br
+					br
+			.row
+				.col-md-3
+				.col-md-3
+					button#start-experiment.btn.btn-primary.btn-block Iniciar Experimento
+				.col-md-3
+					button#stop-experiment.btn.btn-danger.btn-block Parar Experimento
+				.col-md-3
+		script.
+			var id   = '#{id}';
+			var port = #{port};
+		script(src="js/jquery.min.js")
+		script(src="js/socket.io-1.4.5.js")
+		script(src="js/THREEx.KeyboardState.js")
+		script(src="js/dat.gui.min.js")
+		script(src="js/settings.js")
+		script(src="js/game.js")
+		script(src="js/client.js")
