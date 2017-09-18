@@ -1,117 +1,145 @@
 var Experiment = require('./experiment');
+var spawn = require('child_process').spawn;
 
 module.exports = function (port, id, connection) {
     var self = this;
     this.browserMessageBuffer = '';
+    this.emulatorMessageBuffer = '';
+
     this.actions = {
         Start: function (message) {
-            self.experiment = new Experiment(connection);
+            if (self.gameProcess) {
+                self.experiment = undefined;
+                self.emulatorSocket = undefined;
+                self.gameProcess.kill('SIGKILL');
+            }
 
-            self.openEmulator();
+            self.experiment = new Experiment(connection);
+            self.StartEmulator();
         },
 
         Command: function (message) {
-            if (self.gameSocket) {
-                self.gameSocket.sendUTF(message)
-            }
-            var command = message.substring(message.indexOf('|') + 1);
-            if (self.experiment) {
-                self.experiment.insertSample(command, self.currentImage);
+            command = message.substring(message.indexOf('|') + 1);
+            if (self.emulatorSocket) {
+                self.emulatorSocket.sendUTF(message);
+                if (self.currentImage) {
+                    self.experiment.insertSample(command, self.currentImage);
+                }
             }
         },
 
         Image: function (message) {
+            image = message.substring(message.indexOf('|') + 1);
             if (self.browserSocket) {
                 self.browserSocket.sendUTF(message);
-                self.currentImage = message.substring(message.indexOf('|') + 1);
+                self.currentImage = image
+            }
+        },
+
+        Stop: function (message) {
+            if (self.gameProcess) {
+                self.emulatorSocket = undefined;
+                self.gameProcess.kill('SIGKILL');
             }
         },
 
         GameOver: function (message) {
-            if (self.browserSocket) {
-                self.browserSocket.sendUTF(message);
-            }
-
+            result = message.substring(message.indexOf('|') + 1);
             if (self.gameProcess) {
                 self.gameProcess.kill('SIGKILL');
             }
 
-            var result = message.substring(message.indexOf('|') + 1);
-            if (self.experiment) {
-                self.experiment.setExperimentAsFinished(result);
+            if (self.browserSocket) {
+                self.browserSocket.sendUTF(message);
             }
+
+            self.experiment.setExperimentAsFinished(result);
         }
     };
 
-    this.registerBrowser = function (browserSocket) {
+    this.RegisterBrowserSocket = function (browserSocket) {
         self.browserSocket = browserSocket;
-        browserSocket.on('message', function(messageData) {
-            var message = messageData.utf8Data;
-            if (message.type === 'utf8') {
-                if (message[message.length - 1] != '\n')
-                {
+        browserSocket.on('message', function (messageData) {
+            if (messageData.type === 'utf8') {
+                var message = messageData.utf8Data;
+                if (message[message.length - 1] != '\n') {
                     self.browserMessageBuffer += message;
                     return;
                 }
                 if (message.split('|').length <= 1
                     && !self.browserMessageBuffer
-                    && self.browserMessageBuffer.split('|')[1] == "Image")
-                {
+                    && self.browserMessageBuffer.Split('|')[1] == "Image") {
                     self.browserMessageBuffer += message;
                     message = self.browserMessageBuffer;
                     self.browserMessageBuffer = '';
                 }
-    
+
                 message = message.substring(0, message.length - 1);
-                self.HandleServerActions(messageWithNoType);
-                //connection.sendUTF(message.utf8Data);
+                self.HandleServerActions(message);
+            }
+            else if (messageData.type === 'binary') {
+                console.log('Received Binary Message of ' + messageData.binaryData.length + ' bytes');
+                browserSocket.sendBytes(messageData.binaryData);
             }
         });
-        browserSocket.on('close', function(reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        browserSocket.on('close', function (reasonCode, description) {
+            console.log((new Date()) + ' Peer ' + browserSocket.remoteAddress + ' disconnected.');
+            self.actions["Stop"]();
+            delete self;
         });
     };
 
-    this.registerGame = function (gameSocket) {
-        self.gameSocket = gameSocket;
-        gameSocket.on('message', function(messageData) {
-            var message = messageData.utf8Data;
-            if (message.type === 'utf8') {
-                if (message[message.length - 1] != '\n')
-                {
-                    self.gameMessageBuffer += message;
+    this.RegisterEmulatorSocket = function (emulatorSocket) {
+        self.emulatorSocket = emulatorSocket
+        emulatorSocket.on('message', function (messageData) {
+            if (messageData.type === 'utf8') {
+                var message = messageData.utf8Data;
+                if (message[message.length - 1] != '\n') {
+                    self.browserMessageBuffer += message;
                     return;
                 }
                 if (message.split('|').length <= 1
-                    && !self.gameMessageBuffer
-                    && self.gameMessageBuffer.split('|')[1] == "Image")
-                {
-                    self.gameMessageBuffer += message;
-                    message = self.gameMessageBuffer;
-                    self.gameMessageBuffer = '';
+                    && !self.browserMessageBuffer
+                    && self.browserMessageBuffer.Split('|')[1] == "Image") {
+                    self.browserMessageBuffer += message;
+                    message = self.browserMessageBuffer;
+                    self.browserMessageBuffer = '';
                 }
-    
+
                 message = message.substring(0, message.length - 1);
-                self.HandleServerActions(messageWithNoType);
+                self.HandleServerActions(message);
+            }
+            else if (messageData.type === 'binary') {
+                console.log('Received Binary Message of ' + messageData.binaryData.length + ' bytes');
+                emulatorSocket.sendBytes(messageData.binaryData);
             }
         });
-        gameSocket.on('close', function(reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        emulatorSocket.on('close', function (reasonCode, description) {
+            console.log((new Date()) + ' Peer ' + emulatorSocket.remoteAddress + ' disconnected.');
         });
+
         if (self.experiment) {
-            var startMessage = 'StartWithSettings|' + self.experiment.p1 + '' + self.experiment.p2 + '' + self.experiment.level;
-            gameSocket.sendUTF(startMessage);
+            emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.p1 + "" + self.experiment.p2 + "" + self.experiment.level);
         }
     };
 
     this.HandleServerActions = function (message) {
-        var action = message.substring(0, message.indexOf('|'));
+        var action = message.split('|')[0];
         if (self.actions[action]) {
             self.actions[action](message);
         }
     };
 
-    this.openEmulator = function() {
-        self.gameProcess = spawn('./emulator/snes9x' ,[id, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+    this.StartEmulator = function() {
+        var path = '/home/mikolaj/.SnesInterface';
+        self.gameProcess = spawn(path + '/snes9x', [id, port, path + '/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+        //spawn('~/.SnesInterface/snes9x', [id, port, '~/.SnesInterface/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+        self.gameProcess.stdout.on('data', function (data) {
+            console.log(id + " :: Emulator :: " + data);
+        });
+
+        self.gameProcess.stdout.on('error', function (err) {
+            console.log("Error: " + err);
+        });
     };
 };

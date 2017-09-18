@@ -1,11 +1,9 @@
-var Game = function (settings, io) {
+var Game = function (settings, width, height) {
 	var self = this;
 	this.keyboard = new THREEx.KeyboardState();
 	this.settings = settings;
 	this.waitingResponse = false;
 	this.isExperimentOn = false;
-
-	this.io = io;
 
 	this.lastLoop = 0;
 
@@ -47,8 +45,7 @@ var Game = function (settings, io) {
 	};
 
 	this.mainloop = function () {
-		var self = this;
-		if (!this.isExperimentOn) {return;}
+		if (!self.isExperimentOn) {return;}
 
 		var message = "Command|";
 		message += ((this.keyboard.pressed(settings.Up)) ? 1 : 0);
@@ -61,10 +58,11 @@ var Game = function (settings, io) {
 		message += ((this.keyboard.pressed(settings.Y)) ? 1 : 0);
 		message += ((this.keyboard.pressed(settings.L)) ? 1 : 0);
 		message += ((this.keyboard.pressed(settings.R)) ? 1 : 0);
+		message += "\n";
 
 		//console.log(message);
 
-		self.io.emit('command', message);
+		socket.send(message);
 
 		//continue looping
 		var tbl = 1000/settings.MaxFPS;

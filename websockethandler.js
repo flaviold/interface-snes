@@ -28,13 +28,13 @@ module.exports.listenServer = function (server, port) {
         if (type == 'browser') {
             if (!self.users[id]) {
                 self.users[id] = new User(port, id, self.connection);
-                self.users[id].registerBrowser(connection);
+                self.users[id].RegisterBrowserSocket(connection);
             }
         }
 
         if (type == 'emulator') {
             if (self.users[id]) {
-                self.users[id].registerGame(connection);
+                self.users[id].RegisterEmulatorSocket(connection);
             }
         }
     });
