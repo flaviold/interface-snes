@@ -13,7 +13,7 @@ module.exports.listenServer = function (server, port) {
 
     this.connection = mysql.createConnection({
 		host     : 'localhost',
-		user     : 'snes',
+		user     : 'root',
 		password : '123456',
 		database : 'snesdb'
 	});
