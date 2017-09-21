@@ -19,8 +19,8 @@ var experiment = function (connection) {
     };
 
     this.setExperimentAsFinished = function(result) {
-	console.log('update experimentos set vencedor = '+ result +' where id_experimento = ' + self.id + ';');
-        connection.query('update experimentos set ganhador = ? where id_experimento = ?;', [result, self.id], function (err, results, fields) {
+	console.log('update experimentos set vencedor = '+ result +' where id = ' + self.id + ';');
+        connection.query('update experimentos set vencedor = ? where id = ?;', [result, self.id], function (err, results, fields) {
             if (err) console.log('Erro finalizando experimento');
             console.log(results);
         });
