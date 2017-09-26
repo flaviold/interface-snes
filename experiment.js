@@ -1,30 +1,46 @@
+const CouchDB = require('couch-db').CouchDB;
+const couch = new CouchDB('http://localhost:5984');
+couch.auth('snes', '123456')
+
 var experiment = function (connection) {
     var self = this;
+    this.db = couch.database('snesdb');
     
-    this.p1 = Math.floor(Math.random()*8);
+    var experiment_obj = { type: 'experimento' };
+    experiment_obj.p1 = Math.floor(Math.random()*8);
     do {
-        this.p2 = Math.floor(Math.random()*8);
+        experiment_obj.p2 = Math.floor(Math.random()*8);
     } while (this.p2 == this.p1);
-    this.level = Math.floor(Math.random()*8);
+    experiment_obj.level = Math.floor(Math.random()*8);
     
-    connection.query('insert into experimentos (player1, player2, nivel) value (?, ?, ?);', [this.p1, this.p2, this.level], function (err, results, fields) {
-        if (err) console.log('Erro criando experimento');
-        self.id = results.insertId;
+    this.db.insert(experiment_obj, function (err, body) {
+        if(err) {
+            console.log('experiment insert failed ', err.message);
+        }
+        console.log(body.id);
+        experiment_obj.id = body.id;
     });
 
     this.insertSample = function(command, image) {
-        connection.query('insert into amostras (id_experimento, comando, imagem) value (?, ?, ?);', [self.id, command, image], function (err, results, fields) {
-            if (err) console.log('Erro inserção');
+        var sample_obj = { type: 'amostra' };
+        sample_obj.id_experiment = experiment_obj.id;
+        sample_obj.command = command;
+        sample_obj.image = image;
+        
+        self.db.insert(sample_obj, function (err, body) {
+            if(err) {
+                console.log('experiment insert failed ', err.message);
+            }
         });
     };
 
     this.setExperimentAsFinished = function(result) {
-	console.log('update experimentos set vencedor = '+ result +' where id = ' + self.id + ';');
-        connection.query('update experimentos set vencedor = ? where id = ?;', [result, self.id], function (err, results, fields) {
-            if (err) {
-                console.log('Erro finalizando experimento');
-            } else {
-                console.log(results);
+        var result_obj = { type: 'resultado' };
+        result_obj.id_experiment = experiment_obj.id;
+        result_obj.result = result;
+        self.db.insert(result_obj, function (err, body) {
+            if(err) {
+                console.log('experiment insert failed ', err.message);
             }
         });
     };
