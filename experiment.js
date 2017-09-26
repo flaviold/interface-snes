@@ -10,7 +10,7 @@ var experiment = function (connection) {
     experiment_obj.p1 = Math.floor(Math.random()*8);
     do {
         experiment_obj.p2 = Math.floor(Math.random()*8);
-    } while (this.p2 == this.p1);
+    } while (experiment_obj.p2 == experiment_obj.p1);
     experiment_obj.level = Math.floor(Math.random()*8);
     
     this.db.insert(experiment_obj, function (err, body) {
