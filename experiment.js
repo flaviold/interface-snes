@@ -2,7 +2,7 @@ const CouchDB = require('couch-db').CouchDB;
 const couch = new CouchDB('http://localhost:5984');
 couch.auth('snes', '123456')
 
-var experiment = function (connection) {
+var experiment = function (callback) {
     var self = this;
     this.db = couch.database('snesdb');
     
@@ -44,6 +44,8 @@ var experiment = function (connection) {
             }
         });
     };
+
+    callback();
 };
 
 module.exports = experiment;

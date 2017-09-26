@@ -11,13 +11,6 @@ module.exports.listenServer = function (server, port) {
 
     this.users = {}
 
-    this.connection = mysql.createConnection({
-		host     : 'localhost',
-		user     : 'root',
-		password : '123456',
-		database : 'snesdb'
-	});
-
     wsServer.on('request', function (request) {
         var path = request.resourceURL.path.substring(1, request.resourceURL.path.length);
         var type = path.substring(0, path.indexOf('/'));
@@ -27,7 +20,7 @@ module.exports.listenServer = function (server, port) {
         
         if (type == 'browser') {
             if (!self.users[id]) {
-                self.users[id] = new User(port, id, self.connection);
+                self.users[id] = new User(port, id);
                 self.users[id].RegisterBrowserSocket(connection);
             }
         }

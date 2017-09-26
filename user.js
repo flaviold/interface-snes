@@ -1,7 +1,7 @@
 var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
 
-module.exports = function (port, id, connection) {
+module.exports = function (port, id) {
     var self = this;
     this.browserMessageBuffer = '';
     this.emulatorMessageBuffer = '';
@@ -14,8 +14,9 @@ module.exports = function (port, id, connection) {
                 self.gameProcess.kill('SIGKILL');
             }
 
-            self.experiment = new Experiment(connection);
-            self.StartEmulator();
+            self.experiment = new Experiment(function () {
+                self.StartEmulator();
+            });
         },
 
         Command: function (message) {
