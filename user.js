@@ -120,7 +120,7 @@ module.exports = function (port, id) {
         });
 
         if (self.experiment) {
-            emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.p1 + "" + self.experiment.p2 + "" + self.experiment.level);
+            emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
         }
     };
 

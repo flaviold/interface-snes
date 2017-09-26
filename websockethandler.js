@@ -1,4 +1,3 @@
-var mysql = require('mysql');
 var WebSocketServer  = require('websocket').server;
 var User = require('./user');
 

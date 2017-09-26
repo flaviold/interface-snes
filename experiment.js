@@ -5,25 +5,27 @@ couch.auth('snes', '123456')
 var experiment = function (callback) {
     var self = this;
     this.db = couch.database('snesdb');
+    this.order = 0;
     
-    var experiment_obj = { type: 'experimento' };
-    experiment_obj.p1 = Math.floor(Math.random()*8);
+    this.experiment_obj = { type: 'experimento' };
+    this.experiment_obj.p1 = Math.floor(Math.random()*8);
     do {
-        experiment_obj.p2 = Math.floor(Math.random()*8);
-    } while (experiment_obj.p2 == experiment_obj.p1);
-    experiment_obj.level = Math.floor(Math.random()*8);
+        this.experiment_obj.p2 = Math.floor(Math.random()*8);
+    } while (this.experiment_obj.p2 == this.experiment_obj.p1);
+    this.experiment_obj.level = Math.floor(Math.random()*8);
     
-    this.db.insert(experiment_obj, function (err, body) {
+    this.db.insert(this.experiment_obj, function (err, body) {
         if(err) {
             console.log('experiment insert failed ', err.message);
         }
         console.log(body.id);
-        experiment_obj.id = body.id;
+        self.experiment_obj.id = body.id;
     });
 
     this.insertSample = function(command, image) {
         var sample_obj = { type: 'amostra' };
-        sample_obj.id_experiment = experiment_obj.id;
+        sample_obj.order = self.order++;
+        sample_obj.id_experiment = self.experiment_obj.id;
         sample_obj.command = command;
         sample_obj.image = image;
         
@@ -36,7 +38,7 @@ var experiment = function (callback) {
 
     this.setExperimentAsFinished = function(result) {
         var result_obj = { type: 'resultado' };
-        result_obj.id_experiment = experiment_obj.id;
+        result_obj.id_experiment = self.experiment_obj.id;
         result_obj.result = result;
         self.db.insert(result_obj, function (err, body) {
             if(err) {
