@@ -121,6 +121,7 @@ module.exports = function (port, id) {
 
         if (self.experiment) {
             emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
+            self.browserSocket.sendUTF("Settings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
         }
     };
 

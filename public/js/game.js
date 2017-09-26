@@ -34,7 +34,7 @@ var Game = function (settings, width, height) {
 
 		avg = sum/this.realFps.length;
 		ctx.fillStyle = "#FF0000";
-		ctx.fillText(avg.toPrecision(2), 0, 15);
+		ctx.fillText(avg.toFixed(2), 0, 15);
 	};
 
 	this.drawScreen = function (ctx, baseStr) {

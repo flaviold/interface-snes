@@ -1,6 +1,16 @@
 var game;
 var settings;
 var GUI;
+var charactersList = [
+	"Ryu",
+	"Honda",
+	"Blanka",
+	"Guile",
+	"Ken",
+	"Chun-Li",
+	"Zangief",
+	"Dhalsim"
+];
 
 function connect(actions) {
 	var uri = "ws://" + window.location.host + "/browser/" + id;
@@ -26,7 +36,21 @@ function connect(actions) {
 	document.getElementById("stop-experiment").addEventListener("click", function () {
 		socket.send('Stop|\n');
 		game.isExperimentOn = false;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	});
+}
+
+function addGameInfo(p1, p2, lvl) {
+	var p1Element = document.getElementById('p1');
+	var p2Element = document.getElementById('p2');
+	var lvlElement = document.getElementById('lvl');
+	var infoElement = document.getElementById('info');
+
+	p1Element.innerHTML = charactersList[p1];
+	p2Element.innerHTML = charactersList[p2];
+	lvlElement.innerHTML = lvl;
+
+	infoElement.className = "text-center";
 }
 
 window.onload = function () {
@@ -56,7 +80,28 @@ window.onload = function () {
 
 	actions["GameOver"] = function (message) {
 		game.isExperimentOn = false;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		var result = message.split('|')[1] 
+		var resultElement = document.getElementById('result');
+
+		if (result == 'P1') {
+			resultElement.innerHTML = 'Vencedor: Player 1';
+		} else if (result == 'P2') {
+			resultElement.innerHTML = 'Vencedor: Bot';
+		} else {
+			resultElement.innerHTML = 'Empate';
+		}
+		
 		console.log(message);
+	}
+
+	actions["Settings"] = function (message) {
+		var settings = message.split('|')[1];
+		player1 = parseInt(settings.substring(0, 1));
+		player2 = parseInt(settings.substring(1, 2));
+		level = parseInt(settings.substring(2, 3));
+
+		addGameInfo(player1, player2, level);
 	}
 
 	connect(actions);

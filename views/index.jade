@@ -6,12 +6,20 @@ html
 		link(href="css/main.css" rel="stylesheet" type="text/css")
 	body
 		.container
-			h1.text-primary.text-center Game running with ID: #{id}
+			h2#info.hidden 
+				span#p1
+				|  - 
+				span#p2
+				|  - nível: 
+				span#lvl
 			.row
 				.col-md-12
 					canvas#viewport(width="256px", height="224px")
 					br
 					br
+			.row
+				.col-md-12
+					h2#result.text-center
 			.row
 				.col-md-3
 				.col-md-3
