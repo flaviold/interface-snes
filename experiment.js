@@ -8,7 +8,7 @@ var experiment = function (callback) {
     this.order = 0;
     
     this.experiment_obj = { type: 'experimento' };
-    this.experiment_obj.p1 = Math.floor(Math.random()*8);
+    this.experiment_obj.p1 = Math.floor(Math.random()*4);
     do {
         this.experiment_obj.p2 = Math.floor(Math.random()*8);
     } while (this.experiment_obj.p2 == this.experiment_obj.p1);
