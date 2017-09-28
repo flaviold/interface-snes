@@ -1,11 +1,17 @@
-const CouchDB = require('couch-db').CouchDB;
-const couch = new CouchDB('http://localhost:5984');
-couch.auth('snes', '123456')
+var pathBase = require('./settings').experimentPaths;
+var fs = require('fs');
+var jsonfile = require('jsonfile');
+var uid	= require('uid');
 
 var experiment = function (p1, p2, lvl, callback) {
     var self = this;
-    this.db = couch.database('snesdb');
     this.order = 0;
+    this.id = uid(10);
+    this.path = pathBase + 'experimento-' + this.id + '/';
+
+    if (!fs.existsSync(this.path)){
+        fs.mkdirSync(this.path);
+    }
     
     this.experiment_obj = { type: 'experimento' };
     this.experiment_obj.p1 = p1;
@@ -15,12 +21,10 @@ var experiment = function (p1, p2, lvl, callback) {
     }
     this.experiment_obj.level = lvl;
     
-    this.db.insert(this.experiment_obj, function (err, body) {
-        if(err) {
-            console.log('experiment insert failed ', err.message);
+    jsonfile.writeFile(this.path + 'header.json', this.experiment_obj, function (err) {
+        if (err) {
+            console.log(err);
         }
-        console.log(body.id);
-        self.experiment_obj.id = body.id;
     });
 
     this.insertSample = function(command, image) {
@@ -30,9 +34,9 @@ var experiment = function (p1, p2, lvl, callback) {
         sample_obj.command = command;
         sample_obj.image = image;
         
-        self.db.insert(sample_obj, function (err, body) {
-            if(err) {
-                console.log('experiment insert failed ', err.message);
+        jsonfile.writeFile(self.path + 'sample-' + sample_obj.order + '.json', sample_obj, function (err) {
+            if (err) {
+                console.log(err);
             }
         });
     };
@@ -41,9 +45,9 @@ var experiment = function (p1, p2, lvl, callback) {
         var result_obj = { type: 'resultado' };
         result_obj.id_experiment = self.experiment_obj.id;
         result_obj.result = result;
-        self.db.insert(result_obj, function (err, body) {
+        jsonfile.writeFile(self.path + 'header.json', result_obj, { flag: 'a'}, function (err) {
             if(err) {
-                console.log('experiment insert failed ', err.message);
+                console.log(err);
             }
         });
     };
