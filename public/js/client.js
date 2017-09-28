@@ -11,6 +11,7 @@ var charactersList = [
 	"Zangief",
 	"Dhalsim"
 ];
+var p1, p2, lvl;
 
 function connect(actions) {
 	var uri = "ws://" + window.location.host + "/browser/" + id;
@@ -30,7 +31,13 @@ function connect(actions) {
 	};
 
 	document.getElementById("start-experiment").addEventListener("click", function () {
-		socket.send('Start|\n');
+		var error = document.getElementById('error');
+		if (!p1 || !p2 || !lvl) {
+			error.innerHTML = "selecione as opções antes de iniciar o experimento";
+			return;
+		}
+		error.innerHTML = "";
+		socket.send('Start|'+p1+''+p2+''+lvl+'\n');
 	});
 
 	document.getElementById("stop-experiment").addEventListener("click", function () {
@@ -40,17 +47,32 @@ function connect(actions) {
 	});
 }
 
-function addGameInfo(p1, p2, lvl) {
-	var p1Element = document.getElementById('p1');
-	var p2Element = document.getElementById('p2');
-	var lvlElement = document.getElementById('lvl');
-	var infoElement = document.getElementById('info');
+function addGameSelect() {
+	var p1Element = document.getElementById('p1-sel');
+	var p2Element = document.getElementById('p2-sel');
+	var lvlElement = document.getElementById('lvl-sel');
 
-	p1Element.innerHTML = charactersList[p1];
-	p2Element.innerHTML = charactersList[p2];
-	lvlElement.innerHTML = lvl;
-
-	infoElement.className = "text-center";
+	p1Element.onchange = function (event) {
+		p1 = event.target.value;
+		p2Element.innerHTML = '<option value="">-</option>'
+		if (p1) {
+			for (var i = 0; i < charactersList.length; i++) {
+				if (i == p1) {
+					continue;
+				}
+				var option = document.createElement('option');
+				option.value = i;
+				option.innerHTML = charactersList[i];
+				p2Element.append(option);
+			}
+		}
+	}
+	p2Element.onchange = function (event) {
+		p2 = event.target.value;
+	}
+	lvlElement.onchange = function (event) {
+		lvl = event.target.value;
+	}
 }
 
 window.onload = function () {
@@ -95,14 +117,6 @@ window.onload = function () {
 		console.log(message);
 	}
 
-	actions["Settings"] = function (message) {
-		var settings = message.split('|')[1];
-		player1 = parseInt(settings.substring(0, 1));
-		player2 = parseInt(settings.substring(1, 2));
-		level = parseInt(settings.substring(2, 3));
-
-		addGameInfo(player1, player2, level);
-	}
-
+	addGameSelect();
 	connect(actions);
 };

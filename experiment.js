@@ -2,17 +2,18 @@ const CouchDB = require('couch-db').CouchDB;
 const couch = new CouchDB('http://localhost:5984');
 couch.auth('snes', '123456')
 
-var experiment = function (callback) {
+var experiment = function (p1, p2, lvl, callback) {
     var self = this;
     this.db = couch.database('snesdb');
     this.order = 0;
     
     this.experiment_obj = { type: 'experimento' };
-    this.experiment_obj.p1 = Math.floor(Math.random()*4);
-    do {
+    this.experiment_obj.p1 = p1;
+    this.experiment_obj.p2 = p2;
+    while (this.experiment_obj.p2 == this.experiment_obj.p1) {
         this.experiment_obj.p2 = Math.floor(Math.random()*8);
-    } while (this.experiment_obj.p2 == this.experiment_obj.p1);
-    this.experiment_obj.level = Math.floor(Math.random()*8);
+    }
+    this.experiment_obj.level = lvl;
     
     this.db.insert(this.experiment_obj, function (err, body) {
         if(err) {

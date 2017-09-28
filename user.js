@@ -13,8 +13,11 @@ module.exports = function (port, id) {
                 self.emulatorSocket = undefined;
                 self.gameProcess.kill('SIGKILL');
             }
-
-            self.experiment = new Experiment(function () {
+            var settings = message.split('|')[1];
+            var p1 = settings.substring(0, 1);
+            var p2 = settings.substring(1, 2);
+            var lvl = settings.substring(2, 3);
+            self.experiment = new Experiment(p1, p2, lvl, function () {
                 self.StartEmulator();
             });
         },
@@ -121,7 +124,6 @@ module.exports = function (port, id) {
 
         if (self.experiment) {
             emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
-            self.browserSocket.sendUTF("Settings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
         }
     };
 

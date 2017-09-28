@@ -6,14 +6,36 @@ html
 		link(href="css/main.css" rel="stylesheet" type="text/css")
 	body
 		.container
-			h2#info.hidden 
-				span#p1
-				|  - 
-				span#p2
-				|  - nível: 
-				span#lvl
+			.row
+				.col-md-12.text-center.hidden sendo modificado, qualquer problema pode estar sendo causado pelas modificações
+			.row
+				.col-md-12.text-center
+					label Player 1: 
+					select#p1-sel
+						option(value='') -
+						option(value='0') Ryu
+						option(value='1') Honda
+						option(value='2') Blanka
+						option(value='3') Guile
+					label Player 2: 
+					select#p2-sel
+						option(value='') -
+					label Nível:
+					select#lvl-sel
+						option(value='') -
+						option(value='0') 0
+						option(value='1') 1
+						option(value='2') 2
+						option(value='3') 3
+						option(value='4') 4
+						option(value='5') 5
+						option(value='6') 6
+						option(value='7') 7
+			.row
+				#error.col-md-12.text-center.text-danger
 			.row
 				.col-md-12
+					br
 					canvas#viewport(width="256px", height="224px")
 					br
 					br
