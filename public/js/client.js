@@ -32,11 +32,13 @@ function connect(actions) {
 
 	document.getElementById("start-experiment").addEventListener("click", function () {
 		var error = document.getElementById('error');
+		var resultElement = document.getElementById('result');
 		if (!p1 || !p2 || !lvl) {
 			error.innerHTML = "selecione as opções antes de iniciar o experimento";
 			return;
 		}
 		error.innerHTML = "";
+		resultElement.className = "hidden";
 		socket.send('Start|'+p1+''+p2+''+lvl+'\n');
 	});
 
@@ -114,7 +116,15 @@ window.onload = function () {
 			resultElement.innerHTML = 'Empate';
 		}
 		
-		console.log(message);
+		resultElement.className = 'text-center';
+	}
+
+	actions["Error"] = function (message) {
+		var err = message.split('|')[1];
+		var error = document.getElementById('error');
+		if (err == 'maxGames') {
+			error.innerHTML = "O servidor está no limite de usuários jogando,<br>tente novamente mais tarde."
+		}
 	}
 
 	addGameSelect();

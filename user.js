@@ -1,6 +1,7 @@
 var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
 var maxGames = require('./settings').maxGamesConcurrentlyPlaying;
+var pathEmulator = require('./settings').emulatorPath;
 
 module.exports = function (port, id) {
     var self = this;
@@ -9,7 +10,7 @@ module.exports = function (port, id) {
 
     this.actions = {
         Start: function (message) {
-            if (currentGamesCount > maxGames) {
+            if (currentGamesCount >= maxGames) {
                 self.browserSocket.sendUTF("Error|maxGames");
                 return;
             }
@@ -144,12 +145,11 @@ module.exports = function (port, id) {
     };
 
     this.StartEmulator = function() {
-        var path = '/home/lcad/.SnesInterface';
-        self.gameProcess = spawn(path + '/snes9x', [id, port, path + '/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+        self.gameProcess = spawn(pathEmulator + 'snes9x', [id, port, pathEmulator + 'Street-Fighter-II-The-World-Warrior-USA.sfc']);
         //spawn('~/.SnesInterface/snes9x', [id, port, '~/.SnesInterface/Street-Fighter-II-The-World-Warrior-USA.sfc']);
-        self.gameProcess.stdout.on('data', function (data) {
-            console.log(id + " :: Emulator :: " + data);
-        });
+        // self.gameProcess.stdout.on('data', function (data) {
+        //     console.log(id + " :: Emulator :: " + data);
+        // });
 
         self.gameProcess.stdout.on('error', function (err) {
             console.log("Error: " + err);
