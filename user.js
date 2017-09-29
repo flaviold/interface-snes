@@ -1,5 +1,6 @@
 var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
+var maxGames = require('./settings').maxGamesConcurrentlyPlaying;
 
 module.exports = function (port, id) {
     var self = this;
@@ -8,6 +9,12 @@ module.exports = function (port, id) {
 
     this.actions = {
         Start: function (message) {
+            if (currentGamesCount > maxGames) {
+                self.browserSocket.sendUTF("Error|maxGames");
+                return;
+            }
+
+            currentGamesCount++;
             if (self.gameProcess) {
                 self.experiment = undefined;
                 self.emulatorSocket = undefined;
@@ -45,6 +52,7 @@ module.exports = function (port, id) {
                 self.emulatorSocket = undefined;
                 self.gameProcess.kill('SIGKILL');
             }
+            currentGamesCount--;
         },
 
         GameOver: function (message) {
@@ -58,6 +66,7 @@ module.exports = function (port, id) {
             }
 
             self.experiment.setExperimentAsFinished(result);
+            currentGamesCount--;
         }
     };
 
