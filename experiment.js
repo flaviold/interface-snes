@@ -7,7 +7,13 @@ var experiment = function (p1, p2, lvl, callback) {
     var self = this;
     this.order = 0;
     this.id = uid(10);
-    this.path = pathBase + 'experiment-' + this.id + '/';
+    var data = new Date()
+    this.path = pathBase 
+        + 'experiment-'
+        + data.getDate() + '-' 
+        + data.getMonth() + '-'
+        + data.getFullYear() + '-'
+        + this.id + '/';
 
     if (!fs.existsSync(this.path)){
         fs.mkdirSync(this.path);
