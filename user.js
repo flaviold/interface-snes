@@ -35,16 +35,19 @@ module.exports = function (port, id) {
             if (self.emulatorSocket) {
                 self.emulatorSocket.sendUTF(message);
                 if (self.currentImage) {
-                    self.experiment.insertSample(command, self.currentImage);
+                    self.experiment.insertSample(command, self.currentImage, self.p1Life, self.p2Life, self.gameTimer);
                 }
             }
         },
 
-        Image: function (message) {
-            var image = message.substring(message.indexOf('|') + 1);
+        Game: function (message) {
+            self.p1Life = message.split('|')[1];
+            self.p2Life = message.split('|')[2];
+            self.gameTimer = message.split('|')[3];
+            self.currentImage = message.split('|')[4];
+
             if (self.browserSocket) {
-                self.browserSocket.sendUTF(message);
-                self.currentImage = image
+                self.browserSocket.sendUTF('Image|' + self.currentImage);
             }
         },
 

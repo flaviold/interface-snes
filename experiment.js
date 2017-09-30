@@ -33,13 +33,15 @@ var experiment = function (p1, p2, lvl, callback) {
         }
     });
 
-    this.insertSample = function(command, image) {
+    this.insertSample = function(command, image, p1Life, p2Life, gameTimer) {
         var sample_obj = { type: 'amostra' };
         sample_obj.order = self.order++;
-        sample_obj.id_experiment = self.experiment_obj.id;
         sample_obj.command = command;
+        sample_obj.p1_life = p1Life;
+        sample_obj.p2_life = p2Life;
+        sample_obj.game_timer = gameTimer;
         sample_obj.image = image;
-        
+
         jsonfile.writeFile(self.path + 'sample-' + sample_obj.order + '.json', sample_obj, function (err) {
             if (err) {
                 console.log(err);
