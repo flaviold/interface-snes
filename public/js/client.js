@@ -31,19 +31,13 @@ function connect(actions) {
 	};
 
 	document.getElementById("start-experiment").addEventListener("click", function () {
-		var error = document.getElementById('error');
-		var resultElement = document.getElementById('result');
-		if (!p1 || !p2 || !lvl) {
-			error.innerHTML = "selecione as opções antes de iniciar o experimento";
-			return;
-		}
-		error.innerHTML = "";
-		resultElement.className = "hidden";
-		socket.send('Start|'+p1+''+p2+''+lvl+'\n');
+		var start = { action: 'Start' };
+		socket.send(JSON.stringify(start));
 	});
 
 	document.getElementById("stop-experiment").addEventListener("click", function () {
-		socket.send('Stop|\n');
+		var stop = { action: 'Stop'}
+		socket.send(JSON.stringify(stop));
 		game.isExperimentOn = false;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	});

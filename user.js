@@ -2,74 +2,71 @@ var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
 var maxGames = require('./settings').maxGamesConcurrentlyPlaying;
 var pathEmulator = require('./settings').emulatorPath;
+var pathExperiments = require('./settings').experimentPaths;
+var fs = require('fs');
 
 module.exports = function (port, id) {
     var self = this;
+    var date = new Date();
     this.browserMessageBuffer = '';
     this.emulatorMessageBuffer = '';
+    this.path = pathExperiments 
+    + 'experiment-'
+    + date.getDate() + '-' 
+    + date.getMonth() + '-'
+    + date.getFullYear() + '-'
+    + this.id + '/';
+
+    if (!fs.existsSync(this.path)){
+        fs.mkdirSync(this.path);
+    }
 
     this.actions = {
-        Start: function (message) {
+        Start: function (obj) {
             if (currentGamesCount >= maxGames) {
-                self.browserSocket.sendUTF("Error|maxGames");
+                var error = {};
+                error.action = 'Error'
+                error.message = 'maxGames'
+                self.browserSocket.sendUTF(JSON.stringify(error));
                 return;
             }
 
-            currentGamesCount++;
             if (self.gameProcess) {
                 self.experiment = undefined;
                 self.emulatorSocket = undefined;
                 self.gameProcess.kill('SIGKILL');
+            } else {
+                currentGamesCount++;
             }
-            var settings = message.split('|')[1];
-            var p1 = settings.substring(0, 1);
-            var p2 = settings.substring(1, 2);
-            var lvl = settings.substring(2, 3);
-            self.experiment = new Experiment(p1, p2, lvl, function () {
+            
+            self.experiment = new Experiment(self.path, function () {
                 self.StartEmulator();
             });
         },
 
-        Command: function (message) {
-            command = message.substring(message.indexOf('|') + 1);
+        Command: function (obj) {
             if (self.emulatorSocket) {
-                self.emulatorSocket.sendUTF(message);
+                self.emulatorSocket.sendUTF('Command|' + obj.command);
                 if (self.currentImage) {
-                    self.experiment.insertSample(command, self.currentImage, self.p1Life, self.p2Life, self.gameTimer);
+                    self.experiment.insertSample(self.currentFrame, obj.command, self.currentImage);
                 }
             }
         },
 
-        Game: function (message) {
-            self.p1Life = message.split('|')[1];
-            self.p2Life = message.split('|')[2];
-            self.gameTimer = message.split('|')[3];
-            self.currentImage = message.split('|')[4];
+        Game: function (obj) {
+            self.currentImage = obj.image;
+            self.currentFrame = obj.frame;
 
             if (self.browserSocket) {
-                self.browserSocket.sendUTF('Image|' + self.currentImage);
+                self.browserSocket.sendUTF(JSON.stringify(obj));
             }
         },
 
-        Stop: function (message) {
+        Stop: function (obj) {
             if (self.gameProcess) {
                 self.emulatorSocket = undefined;
                 self.gameProcess.kill('SIGKILL');
             }
-            currentGamesCount--;
-        },
-
-        GameOver: function (message) {
-            var result = message.substring(message.indexOf('|') + 1);
-            if (self.gameProcess) {
-                self.gameProcess.kill('SIGKILL');
-            }
-
-            if (self.browserSocket) {
-                self.browserSocket.sendUTF(message);
-            }
-
-            self.experiment.setExperimentAsFinished(result);
             currentGamesCount--;
         }
     };
@@ -79,20 +76,18 @@ module.exports = function (port, id) {
         browserSocket.on('message', function (messageData) {
             if (messageData.type === 'utf8') {
                 var message = messageData.utf8Data;
-                if (message[message.length - 1] != '\n') {
+                if (message.indexOf('}') < 0) {
                     self.browserMessageBuffer += message;
                     return;
                 }
-                if (message.split('|').length <= 1
-                    && !self.browserMessageBuffer
-                    && self.browserMessageBuffer.Split('|')[1] == "Image") {
+                if (message.indexOf('{') != 0) {
                     self.browserMessageBuffer += message;
                     message = self.browserMessageBuffer;
                     self.browserMessageBuffer = '';
                 }
 
-                message = message.substring(0, message.length - 1);
-                self.HandleServerActions(message);
+                var obj = JSON.parse(message);
+                self.HandleServerActions(obj);
             }
             else if (messageData.type === 'binary') {
                 console.log('Received Binary Message of ' + messageData.binaryData.length + ' bytes');
@@ -111,20 +106,18 @@ module.exports = function (port, id) {
         emulatorSocket.on('message', function (messageData) {
             if (messageData.type === 'utf8') {
                 var message = messageData.utf8Data;
-                if (message[message.length - 1] != '\n') {
+                if (message.indexOf('}') < 0) {
                     self.browserMessageBuffer += message;
                     return;
                 }
-                if (message.split('|').length <= 1
-                    && !self.browserMessageBuffer
-                    && self.browserMessageBuffer.Split('|')[1] == "Image") {
+                if (message.indexOf('{') != 0) {
                     self.browserMessageBuffer += message;
                     message = self.browserMessageBuffer;
                     self.browserMessageBuffer = '';
                 }
-
-                message = message.substring(0, message.length - 1);
-                self.HandleServerActions(message);
+                
+                var obj = JSON.parse(message);
+                self.HandleServerActions(obj);
             }
             else if (messageData.type === 'binary') {
                 console.log('Received Binary Message of ' + messageData.binaryData.length + ' bytes');
@@ -134,25 +127,16 @@ module.exports = function (port, id) {
         emulatorSocket.on('close', function (reasonCode, description) {
             console.log((new Date()) + ' Peer ' + emulatorSocket.remoteAddress + ' disconnected.');
         });
-
-        if (self.experiment) {
-            emulatorSocket.sendUTF("StartWithSettings|" + self.experiment.experiment_obj.p1 + "" + self.experiment.experiment_obj.p2 + "" + self.experiment.experiment_obj.level);
-        }
     };
 
-    this.HandleServerActions = function (message) {
-        var action = message.split('|')[0];
-        if (self.actions[action]) {
-            self.actions[action](message);
+    this.HandleServerActions = function (obj) {
+        if (self.actions[obj.action]) {
+            self.actions[obj.action](obj);
         }
     };
 
     this.StartEmulator = function() {
-        self.gameProcess = spawn(pathEmulator + 'snes9x', [id, port, pathEmulator + 'Street-Fighter-II-The-World-Warrior-USA.sfc']);
-        //spawn('~/.SnesInterface/snes9x', [id, port, '~/.SnesInterface/Street-Fighter-II-The-World-Warrior-USA.sfc']);
-        // self.gameProcess.stdout.on('data', function (data) {
-        //     console.log(id + " :: Emulator :: " + data);
-        // });
+        self.gameProcess = spawn(pathEmulator + 'snes9x', [id, port, self.path, pathEmulator + 'Street-Fighter-II-The-World-Warrior-USA.sfc']);
 
         self.gameProcess.stdout.on('error', function (err) {
             console.log("Error: " + err);
