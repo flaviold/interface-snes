@@ -14,10 +14,12 @@ var Settings = function () {
 	this.R = "S";
 
 	this.configureGUI = function (GUI) {
+		// GUI.add(this, "Start");
+		// GUI.add(this, "Select");
 		GUI.add(this, "Up");
+		GUI.add(this, "Right");
 		GUI.add(this, "Down");
 		GUI.add(this, "Left");
-		GUI.add(this, "Right");
 		GUI.add(this, "A");
 		GUI.add(this, "B");
 		GUI.add(this, "X");

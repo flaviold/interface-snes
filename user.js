@@ -1,29 +1,18 @@
 var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
-var maxGames = require('./settings').maxGamesConcurrentlyPlaying;
-var pathEmulator = require('./settings').emulatorPath;
-var pathExperiments = require('./settings').experimentPaths;
+var settings = require('./settings');
 var fs = require('fs');
+var uid	= require('uid');
 
 module.exports = function (port, id) {
     var self = this;
     var date = new Date();
     this.browserMessageBuffer = '';
     this.emulatorMessageBuffer = '';
-    this.path = pathExperiments 
-    + 'experiment-'
-    + date.getDate() + '-' 
-    + date.getMonth() + '-'
-    + date.getFullYear() + '-'
-    + this.id + '/';
-
-    if (!fs.existsSync(this.path)){
-        fs.mkdirSync(this.path);
-    }
 
     this.actions = {
         Start: function (obj) {
-            if (currentGamesCount >= maxGames) {
+            if (currentGamesCount >= settings.maxGamesConcurrentlyPlaying) {
                 var error = {};
                 error.action = 'Error'
                 error.message = 'maxGames'
@@ -38,8 +27,18 @@ module.exports = function (port, id) {
             } else {
                 currentGamesCount++;
             }
-            
-            self.experiment = new Experiment(self.path, function () {
+
+            var path = settings.experimentPaths 
+            + 'experiment-'
+            + date.getDate() + '-' 
+            + date.getMonth() + '-'
+            + date.getFullYear() + '-'
+            + uid(10) + '/';
+
+            if (!fs.existsSync(path)){
+                fs.mkdirSync(path);
+            }
+            self.experiment = new Experiment(path, function () {
                 self.StartEmulator();
             });
         },
@@ -47,15 +46,17 @@ module.exports = function (port, id) {
         Command: function (obj) {
             if (self.emulatorSocket) {
                 self.emulatorSocket.sendUTF('Command|' + obj.command);
-                if (self.currentImage) {
-                    self.experiment.insertSample(self.currentFrame, obj.command, self.currentImage);
+                if (self.currentObj && self.currentObj.save) {
+                    delete self.currentObj.save
+                    delete self.currentObj.action
+                    self.currentObj.command = obj.command
+                    self.experiment.insertSample(self.currentObj);
                 }
             }
         },
 
         Game: function (obj) {
-            self.currentImage = obj.image;
-            self.currentFrame = obj.frame;
+            self.currentObj = obj;
 
             if (self.browserSocket) {
                 self.browserSocket.sendUTF(JSON.stringify(obj));
@@ -94,11 +95,6 @@ module.exports = function (port, id) {
                 browserSocket.sendBytes(messageData.binaryData);
             }
         });
-        browserSocket.on('close', function (reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + browserSocket.remoteAddress + ' disconnected.');
-            self.actions["Stop"]();
-            delete self;
-        });
     };
 
     this.RegisterEmulatorSocket = function (emulatorSocket) {
@@ -124,9 +120,6 @@ module.exports = function (port, id) {
                 emulatorSocket.sendBytes(messageData.binaryData);
             }
         });
-        emulatorSocket.on('close', function (reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + emulatorSocket.remoteAddress + ' disconnected.');
-        });
     };
 
     this.HandleServerActions = function (obj) {
@@ -136,7 +129,7 @@ module.exports = function (port, id) {
     };
 
     this.StartEmulator = function() {
-        self.gameProcess = spawn(pathEmulator + 'snes9x', [id, port, self.path, pathEmulator + 'Street-Fighter-II-The-World-Warrior-USA.sfc']);
+        self.gameProcess = spawn(settings.emulatorPath + settings.emulator, [id, port]);
 
         self.gameProcess.stdout.on('error', function (err) {
             console.log("Error: " + err);

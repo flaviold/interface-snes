@@ -52,17 +52,15 @@ var Game = function (settings, width, height) {
 			command: ''
 		};
 		commandObj.command += ((this.keyboard.pressed(settings.Up)) ? 1 : 0);
+		commandObj.command += ((this.keyboard.pressed(settings.Right)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.Down)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.Left)) ? 1 : 0);
-		commandObj.command += ((this.keyboard.pressed(settings.Right)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.A)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.B)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.X)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.Y)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.L)) ? 1 : 0);
 		commandObj.command += ((this.keyboard.pressed(settings.R)) ? 1 : 0);
-
-		//console.log(message);
 
 		socket.send(JSON.stringify(commandObj));
 

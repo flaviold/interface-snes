@@ -20,10 +20,9 @@ function connect(actions) {
 		console.log("opened connection to " + uri);
 	};
 	socket.onmessage = function (event) {
-		var message = event.data;
-		var action = message.split('|')[0];
-        if (actions[action]) {
-            actions[action](message);
+		var obj = JSON.parse(event.data);
+        if (actions[obj.action]) {
+            actions[obj.action](obj);
         }
 	};
 	socket.onerror = function (event) {
@@ -87,8 +86,8 @@ window.onload = function () {
 
 	var actions = {};
 
-	actions["Image"] = function (message) {
-		var image = message.split('|')[1];
+	actions["Game"] = function (obj) {
+		var image = obj.image;
 		game.drawScreen(ctx, image);
 		if (!game.isExperimentOn) {
 			game.isExperimentOn = true;
