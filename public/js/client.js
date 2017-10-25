@@ -1,20 +1,20 @@
 var game;
 var settings;
 var GUI;
-var charactersList = [
-	"Ryu",
-	"Honda",
-	"Blanka",
-	"Guile",
-	"Ken",
-	"Chun-Li",
-	"Zangief",
-	"Dhalsim"
-];
-var p1, p2, lvl;
 
-function connect(actions) {
-	var uri = "ws://" + window.location.host + "/browser/" + id;
+function httpGetAsync(theUrl, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
+
+function connect(actions, id) {
+	var uri = "ws://200.137.66.3:8000/browser/" + id;
 	socket = new WebSocket(uri);
 	socket.onopen = function (event) {
 		console.log("opened connection to " + uri);
@@ -42,33 +42,33 @@ function connect(actions) {
 	});
 }
 
-function addGameSelect() {
-	var p1Element = document.getElementById('p1-sel');
-	var p2Element = document.getElementById('p2-sel');
-	var lvlElement = document.getElementById('lvl-sel');
+// function addGameSelect() {
+// 	var p1Element = document.getElementById('p1-sel');
+// 	var p2Element = document.getElementById('p2-sel');
+// 	var lvlElement = document.getElementById('lvl-sel');
 
-	p1Element.onchange = function (event) {
-		p1 = event.target.value;
-		p2Element.innerHTML = '<option value="">-</option>'
-		if (p1) {
-			for (var i = 0; i < charactersList.length; i++) {
-				if (i == p1) {
-					continue;
-				}
-				var option = document.createElement('option');
-				option.value = i;
-				option.innerHTML = charactersList[i];
-				p2Element.append(option);
-			}
-		}
-	}
-	p2Element.onchange = function (event) {
-		p2 = event.target.value;
-	}
-	lvlElement.onchange = function (event) {
-		lvl = event.target.value;
-	}
-}
+// 	p1Element.onchange = function (event) {
+// 		p1 = event.target.value;
+// 		p2Element.innerHTML = '<option value="">-</option>'
+// 		if (p1) {
+// 			for (var i = 0; i < charactersList.length; i++) {
+// 				if (i == p1) {
+// 					continue;
+// 				}
+// 				var option = document.createElement('option');
+// 				option.value = i;
+// 				option.innerHTML = charactersList[i];
+// 				p2Element.append(option);
+// 			}
+// 		}
+// 	}
+// 	p2Element.onchange = function (event) {
+// 		p2 = event.target.value;
+// 	}
+// 	lvlElement.onchange = function (event) {
+// 		lvl = event.target.value;
+// 	}
+// }
 
 window.onload = function () {
 	canvas = document.getElementById('viewport');
@@ -120,6 +120,8 @@ window.onload = function () {
 		}
 	}
 
-	addGameSelect();
-	connect(actions);
+	//addGameSelect();
+	httpGetAsync('http://200.137.66.3:8000/id', function (id) {
+		connect(actions, id);
+	});
 };

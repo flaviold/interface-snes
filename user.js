@@ -1,12 +1,9 @@
 var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
 var settings = require('./settings');
-var fs = require('fs');
-var uid	= require('uid');
 
 module.exports = function (port, id) {
     var self = this;
-    var date = new Date();
     this.browserMessageBuffer = '';
     this.emulatorMessageBuffer = '';
 
@@ -28,17 +25,7 @@ module.exports = function (port, id) {
                 currentGamesCount++;
             }
 
-            var path = settings.experimentPaths 
-            + 'experiment-'
-            + date.getDate() + '-' 
-            + date.getMonth() + '-'
-            + date.getFullYear() + '-'
-            + uid(10) + '/';
-
-            if (!fs.existsSync(path)){
-                fs.mkdirSync(path);
-            }
-            self.experiment = new Experiment(path, function () {
+            self.experiment = new Experiment(function () {
                 self.StartEmulator();
             });
         },
@@ -95,6 +82,9 @@ module.exports = function (port, id) {
                 browserSocket.sendBytes(messageData.binaryData);
             }
         });
+        browserSocket.on('close', function (messageData) {
+            self.actions["Stop"]();
+        });
     };
 
     this.RegisterEmulatorSocket = function (emulatorSocket) {
@@ -129,10 +119,10 @@ module.exports = function (port, id) {
     };
 
     this.StartEmulator = function() {
-        self.gameProcess = spawn(settings.emulatorPath + settings.emulator, [id, port]);
+        self.gameProcess = spawn(settings.emulatorPath + settings.emulator, [id, port, settings.emulatorPath + 'sf2.sfc']);
 
-        self.gameProcess.stdout.on('error', function (err) {
-            console.log("Error: " + err);
-        });
+        // self.gameProcess.stdout.on('error', function (err) {
+        //     console.log("Error: " + err);
+        // });
     };
 };
