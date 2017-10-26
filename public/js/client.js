@@ -14,7 +14,7 @@ function httpGetAsync(theUrl, callback)
 }
 
 function connect(actions, id) {
-	var uri = "ws://200.137.66.3:8000/browser/" + id;
+	var uri = "ws://200.137.66.3:8000/browser/";
 	socket = new WebSocket(uri);
 	socket.onopen = function (event) {
 		console.log("opened connection to " + uri);
@@ -121,7 +121,5 @@ window.onload = function () {
 	}
 
 	//addGameSelect();
-	httpGetAsync('http://200.137.66.3:8000/id', function (id) {
-		connect(actions, id);
-	});
+	connect(actions);
 };

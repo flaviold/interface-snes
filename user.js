@@ -121,8 +121,8 @@ module.exports = function (port, id) {
     this.StartEmulator = function() {
         self.gameProcess = spawn(settings.emulatorPath + settings.emulator, [id, port, settings.emulatorPath + 'sf2.sfc']);
 
-        // self.gameProcess.stdout.on('error', function (err) {
-        //     console.log("Error: " + err);
-        // });
+        self.gameProcess.stdout.on('error', function (err) {
+            console.log("Error: " + err);
+        });
     };
 };
