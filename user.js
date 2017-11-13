@@ -45,9 +45,12 @@ module.exports = function (port, id, onDisconnect) {
 
         Game: function (obj) {
             self.currentObj = obj;
+            var objToClient = {};
+            objToClient.action = obj.action;
+            objToClient.image = obj.image;
 
             if (self.browserSocket) {
-                self.browserSocket.sendUTF(JSON.stringify(obj));
+                self.browserSocket.sendUTF(JSON.stringify(objToClient));
             }
         },
 
