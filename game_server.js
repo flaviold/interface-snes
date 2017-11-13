@@ -2,7 +2,6 @@ var express = require('express');
 var app 	= express();
 var server 	= require('http').Server(app);
 var path	= require('path');
-var uid		= require('uid');
 var port	= process.env.PORT || 8000;
 var GetIp	= require('ipware')().get_ip;
 var webSocketHandler = require('./websockethandler');
@@ -20,8 +19,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', function (req, res) {
 	var ip = GetIp(req).clientIp;
+	var date = new Date();
 
-	console.log(ip);
+	console.log(ip + "::Demo connection::" + date.toISOString());
 
 	res.render('index', {
 		port: port

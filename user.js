@@ -2,7 +2,7 @@ var Experiment = require('./experiment');
 var spawn = require('child_process').spawn;
 var settings = require('./settings');
 
-module.exports = function (port, id) {
+module.exports = function (port, id, onDisconnect) {
     var self = this;
     this.browserMessageBuffer = '';
     this.emulatorMessageBuffer = '';
@@ -12,11 +12,12 @@ module.exports = function (port, id) {
             if (currentGamesCount >= settings.maxGamesConcurrentlyPlaying) {
                 var error = {};
                 error.action = 'Error'
-                error.message = 'maxGames'
+                error.message = 'Server is full, try again later.'
                 self.browserSocket.sendUTF(JSON.stringify(error));
                 return;
             }
-
+            
+            console.log('User::'+ id +'::Experiment Started::' + (new Date()).toISOString());
             if (self.gameProcess) {
                 self.experiment = undefined;
                 self.emulatorSocket = undefined;
@@ -56,6 +57,12 @@ module.exports = function (port, id) {
                 self.gameProcess.kill('SIGKILL');
             }
             currentGamesCount--;
+        },
+
+        GameOver: function () {
+            var obj = {};
+            obj.action = 'GameOver'
+            self.browserSocket.sendUTF(JSON.stringify(obj));
         }
     };
 
@@ -84,6 +91,7 @@ module.exports = function (port, id) {
         });
         browserSocket.on('close', function (messageData) {
             self.actions["Stop"]();
+            onDisconnect();
         });
     };
 
@@ -123,6 +131,11 @@ module.exports = function (port, id) {
 
         self.gameProcess.stdout.on('error', function (err) {
             console.log("Error: " + err);
+        });
+
+        self.gameProcess.on('close', function (code) {
+            console.log('User::'+ id +'::Experiment Finished::' + (new Date()).toISOString());
+            self.actions["GameOver"]();
         });
     };
 };

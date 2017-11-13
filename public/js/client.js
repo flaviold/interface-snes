@@ -98,26 +98,12 @@ window.onload = function () {
 	actions["GameOver"] = function (message) {
 		game.isExperimentOn = false;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		var result = message.split('|')[1] 
-		var resultElement = document.getElementById('result');
-
-		if (result == 'P1') {
-			resultElement.innerHTML = 'Vencedor: Player 1';
-		} else if (result == 'P2') {
-			resultElement.innerHTML = 'Vencedor: Bot';
-		} else {
-			resultElement.innerHTML = 'Empate';
-		}
-		
-		resultElement.className = 'text-center';
 	}
 
-	actions["Error"] = function (message) {
-		var err = message.split('|')[1];
+	actions["Error"] = function (obj) {
+		var err = obj.message;
 		var error = document.getElementById('error');
-		if (err == 'maxGames') {
-			error.innerHTML = "O servidor está no limite de usuários jogando,<br>tente novamente mais tarde."
-		}
+		error.innerHTML = err;
 	}
 
 	//addGameSelect();

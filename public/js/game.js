@@ -41,7 +41,7 @@ var Game = function (settings, width, height) {
 		var image = new Image();
 		image.src = "data:image/png;base64," + baseStr;
 		ctx.drawImage(image, 0, 0, width, height);
-		this.showFPS(ctx);
+		//this.showFPS(ctx);
 	};
 
 	this.mainloop = function () {

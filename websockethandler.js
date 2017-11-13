@@ -19,8 +19,12 @@ module.exports.listenServer = function (server, port) {
         
         if (type == 'browser') {
             var newId = uid(10);
-            self.users[id] = new User(port, id);
-            self.users[id].RegisterBrowserSocket(connection);
+            console.log("WS::User Connected::" + newId);
+            self.users[newId] = new User(port, newId, function () {
+                console.log("WS::User Disconnected::" + newId);
+                delete self.users[newId];
+            });
+            self.users[newId].RegisterBrowserSocket(connection);
         }
 
         if (type == 'emulator') {
