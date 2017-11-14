@@ -31,6 +31,7 @@ function connect(actions, id) {
 
 	document.getElementById("start-experiment").addEventListener("click", function () {
 		var start = { action: 'Start' };
+		game.closeGame = false;
 		socket.send(JSON.stringify(start));
 	});
 
@@ -89,14 +90,19 @@ window.onload = function () {
 	actions["Game"] = function (obj) {
 		var image = obj.image;
 		game.drawScreen(ctx, image);
-		if (!game.isExperimentOn) {
+		if (!game.isExperimentOn && !game.closeGame) {
 			game.isExperimentOn = true;
 			game.mainloop();
 		}
+		var time = new Date();
+		game.realFps.push(1000/(time - game.lastLoop));
+		game.realFps.shift();
+		game.lastLoop = time;
 	}
 
 	actions["GameOver"] = function (message) {
 		game.isExperimentOn = false;
+		game.closeGame = true;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
