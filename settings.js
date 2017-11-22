@@ -1,4 +1,4 @@
-module.exports.emulatorPath = '/home/lcad/.SnesInterface/';
+module.exports.emulatorPath = '../.SnesInterface/';
 module.exports.emulator = 'snes9x';
-module.exports.experimentPaths = '/home/lcad/experimentos-snes/';
-module.exports.maxGamesConcurrentlyPlaying = 3;
+module.exports.experimentPaths = '../experimentos-snes/';
+module.exports.maxGamesConcurrentlyPlaying = 10;

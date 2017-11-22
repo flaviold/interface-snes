@@ -14,7 +14,7 @@ function httpGetAsync(theUrl, callback)
 }
 
 function connect(actions, id) {
-	var uri = "ws://200.137.66.3:8000/browser/";
+	var uri = "ws://10.9.8.53:8000/browser/";
 	socket = new WebSocket(uri);
 	socket.onopen = function (event) {
 		console.log("opened connection to " + uri);
@@ -43,53 +43,18 @@ function connect(actions, id) {
 	});
 }
 
-// function addGameSelect() {
-// 	var p1Element = document.getElementById('p1-sel');
-// 	var p2Element = document.getElementById('p2-sel');
-// 	var lvlElement = document.getElementById('lvl-sel');
-
-// 	p1Element.onchange = function (event) {
-// 		p1 = event.target.value;
-// 		p2Element.innerHTML = '<option value="">-</option>'
-// 		if (p1) {
-// 			for (var i = 0; i < charactersList.length; i++) {
-// 				if (i == p1) {
-// 					continue;
-// 				}
-// 				var option = document.createElement('option');
-// 				option.value = i;
-// 				option.innerHTML = charactersList[i];
-// 				p2Element.append(option);
-// 			}
-// 		}
-// 	}
-// 	p2Element.onchange = function (event) {
-// 		p2 = event.target.value;
-// 	}
-// 	lvlElement.onchange = function (event) {
-// 		lvl = event.target.value;
-// 	}
-// }
-
 window.onload = function () {
-	canvas = document.getElementById('viewport');
-	canvas.width = 512;
-	canvas.height = 448;
-	ctx = canvas.getContext('2d');
-	ctx.fillStyle = "white";
-	ctx.font = "bold 16px Arial";
-
 	settings = new Settings();
 	GUI = new dat.GUI();
 	settings.configureGUI(GUI);
 
-	game = new Game(settings, canvas.width, canvas.height);
+	game = new Game(settings);
 
 	var actions = {};
 
 	actions["Game"] = function (obj) {
 		var image = obj.image;
-		game.drawScreen(ctx, image);
+		game.drawScreen(image);
 		if (!game.isExperimentOn && !game.closeGame) {
 			game.isExperimentOn = true;
 			game.mainloop();
@@ -103,7 +68,6 @@ window.onload = function () {
 	actions["GameOver"] = function (message) {
 		game.isExperimentOn = false;
 		game.closeGame = true;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
 	actions["Error"] = function (obj) {

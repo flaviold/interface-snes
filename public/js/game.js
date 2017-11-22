@@ -1,4 +1,4 @@
-var Game = function (settings, width, height) {
+var Game = function (settings) {
 	var self = this;
 	this.keyboard = new THREEx.KeyboardState();
 	this.settings = settings;
@@ -7,6 +7,7 @@ var Game = function (settings, width, height) {
 	this.closeGame = false;
 
 	this.lastLoop = 0;
+	this.lastImage = 0;
 
 	this.commands = {
 		start: false,
@@ -25,24 +26,9 @@ var Game = function (settings, width, height) {
 
 	this.realFps = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-	this.showFPS = function (ctx) {
-		var sum = 0,
-		avg;
-
-		for (var i = 0; i < this.realFps.length; i++) {
-			sum += this.realFps[i];
-		}
-
-		avg = sum/this.realFps.length;
-		ctx.fillStyle = "#FF0000";
-		ctx.fillText(avg.toFixed(2), 0, 15);
-	};
-
-	this.drawScreen = function (ctx, baseStr) {
-		var image = new Image();
-		image.src = "data:image/png;base64," + baseStr;
-		ctx.drawImage(image, 0, 0, width, height);
-		this.showFPS(ctx);
+	this.drawScreen = function (baseStr) {
+		var img = document.getElementById('image');
+		img.src = "data:image/png;base64," + baseStr;
 	};
 
 	this.mainloop = function () {
