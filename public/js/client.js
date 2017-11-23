@@ -14,7 +14,7 @@ function httpGetAsync(theUrl, callback)
 }
 
 function connect(actions, id) {
-	var uri = "ws://10.9.8.53:8000/browser/";
+	var uri = "ws://" + document.location.host + "/browser/";
 	socket = new WebSocket(uri);
 	socket.onopen = function (event) {
 		console.log("opened connection to " + uri);
@@ -39,7 +39,6 @@ function connect(actions, id) {
 		var stop = { action: 'Stop'}
 		socket.send(JSON.stringify(stop));
 		game.isExperimentOn = false;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	});
 }
 
