@@ -27,6 +27,6 @@ writer = cv2.VideoWriter('luta.avi', fourcc, 60,(256, 224))
 for frame in frames:
 	imgBase = Image.open(BytesIO(base64.b64decode(frame[1])))
 	img = np.array(imgBase)[:,:,[2,1,0]]
-	#cv2.imshow('frame', img)
-	#cv2.waitKey(2)
+	cv2.imshow('frame', img)
+	cv2.waitKey(2)
 	writer.write(img.astype(np.uint8))

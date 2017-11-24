@@ -27,6 +27,10 @@ app.get('/', function (req, res) {
 	res.end();
 });
 
+app.get('/status', function (req, res) {
+	res.sendFile(path.join(__dirname, 'views/status.html'));
+});
+
 webSocketHandler.listenServer(server, port);
 
 module.exports.listen = function (callback) {

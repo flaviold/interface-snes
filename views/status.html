@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Teste</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="css/main.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    Users Playing: <span id="players"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="cpu-chart" width="400" height="400"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="ram-chart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+        <script src="js/status.js"></script>
+    </body>
+</html>

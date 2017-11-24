@@ -1,6 +1,8 @@
 var WebSocketServer  = require('websocket').server;
 var User = require('./user');
 var uid	= require('uid');
+var os = require('os');
+var spawn = require('child_process').spawn;
 
 module.exports.listenServer = function (server, port) {
     var self = this;
@@ -9,7 +11,19 @@ module.exports.listenServer = function (server, port) {
         autoAcceptConnections: false
     });
 
-    this.users = {}
+    this.users = {};
+
+    this.CPUPercent = function (callback) {
+        var cpuData = spawn('bash', ['cpu.sh']);
+        
+        cpuData.stdout.on('data', function (data) {
+            callback(parseFloat(data));
+        });
+    };
+
+    this.RAMPercent = function () {
+        return 100*(1 - (os.freemem()/os.totalmem()));
+    };
 
     wsServer.on('request', function (request) {
         var path = request.resourceURL.path.substring(1, request.resourceURL.path.length);
@@ -32,6 +46,21 @@ module.exports.listenServer = function (server, port) {
             if (self.users[id]) {
                 self.users[id].RegisterEmulatorSocket(connection);
             }
+        }
+
+        if (type == 'status') {
+            connection.on('message', function (messageData) {
+                if (messageData.type === 'utf8') {
+                    var message = messageData.utf8Data;
+                    self.CPUPercent(function (CPU) {
+                        var obj = {}
+                        obj.totalUsers = Object.keys(self.users).length;
+                        obj.CPU = CPU;
+                        obj.RAM = self.RAMPercent();
+                        connection.sendUTF(JSON.stringify(obj));
+                    });
+                }
+            });
         }
     });
 };
