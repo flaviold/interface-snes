@@ -67,6 +67,8 @@ window.onload = function () {
 	actions["GameOver"] = function (message) {
 		game.isExperimentOn = false;
 		game.closeGame = true;
+		var img = document.getElementById('image');
+		img.src = "img/cover.png";
 	}
 
 	actions["Error"] = function (obj) {

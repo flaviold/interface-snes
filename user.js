@@ -59,13 +59,15 @@ module.exports = function (port, id, onDisconnect) {
                 self.emulatorSocket = undefined;
                 self.gameProcess.kill('SIGKILL');
             }
-            currentGamesCount--;
         },
 
         GameOver: function () {
             var obj = {};
             obj.action = 'GameOver'
+            self.emulatorSocket = undefined;
+            self.gameProcess = undefined;
             self.browserSocket.sendUTF(JSON.stringify(obj));
+            currentGamesCount--;
         }
     };
 

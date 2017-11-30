@@ -3,6 +3,7 @@ var User = require('./user');
 var uid	= require('uid');
 var os = require('os');
 var spawn = require('child_process').spawn;
+var jsonfile = require('jsonfile');
 
 module.exports.listenServer = function (server, port) {
     var self = this;
@@ -10,6 +11,7 @@ module.exports.listenServer = function (server, port) {
         httpServer: server,
         autoAcceptConnections: false
     });
+    this.statusObj = {};
 
     this.users = {};
 
@@ -49,17 +51,33 @@ module.exports.listenServer = function (server, port) {
         }
 
         if (type == 'status') {
+            var date = new Date();
+            var status = [];
             connection.on('message', function (messageData) {
                 if (messageData.type === 'utf8') {
                     var message = messageData.utf8Data;
                     self.CPUPercent(function (CPU) {
                         var obj = {}
-                        obj.totalUsers = Object.keys(self.users).length;
+                        var usersKey = Object.keys(self.users);
+                        obj.totalUsers = 0;
+                        usersKey.forEach(function (item) {
+                            if (self.users[item] && self.users[item].gameProcess) {
+                                obj.totalUsers++;
+                            }
+                        });
                         obj.CPU = CPU;
                         obj.RAM = self.RAMPercent();
                         connection.sendUTF(JSON.stringify(obj));
+                        status.push(obj);
                     });
                 }
+            });
+            connection.on('close', function () {
+                jsonfile.writeFile(uid(10) + '.json', status, function (err) {
+                    if (err) {
+                        console.log(err)
+                    }
+                })
             });
         }
     });
