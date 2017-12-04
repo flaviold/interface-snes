@@ -9,6 +9,12 @@ module.exports = function (port, id, onDisconnect) {
 
     this.actions = {
         Start: function (obj) {
+            if (self.gameProcess) {
+                self.experiment = undefined;
+                self.emulatorSocket = undefined;
+                self.gameProcess.kill('SIGKILL');
+            }
+
             if (currentGamesCount >= settings.maxGamesConcurrentlyPlaying) {
                 var error = {};
                 error.action = 'Error'
@@ -18,13 +24,7 @@ module.exports = function (port, id, onDisconnect) {
             }
             
             console.log('User::'+ id +'::Experiment Started::' + (new Date()).toISOString());
-            if (self.gameProcess) {
-                self.experiment = undefined;
-                self.emulatorSocket = undefined;
-                self.gameProcess.kill('SIGKILL');
-            } else {
-                currentGamesCount++;
-            }
+            currentGamesCount++;
 
             self.experiment = new Experiment(function () {
                 self.StartEmulator();

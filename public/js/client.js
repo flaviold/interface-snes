@@ -44,8 +44,8 @@ function connect(actions, id) {
 
 window.onload = function () {
 	settings = new Settings();
-	GUI = new dat.GUI();
-	settings.configureGUI(GUI);
+	//GUI = new dat.GUI();
+	//settings.configureGUI(GUI);
 
 	game = new Game(settings);
 

@@ -34,7 +34,17 @@ html
 			.row
 				#error.col-md-12.text-center.text-danger
 			.row
-				.col-md-12
+				.col-md-2
+					span.text-center Controls
+					ul
+						li Arrow keys - Move
+						li Z - Medium kick
+						li X - Light kick
+						li C - Medium punch
+						li V - Light punch
+						li A - Hard punch
+						li S - Hard kick
+				.col-md-10
 					br
 					img#image(src="img/cover.png", width='512', height='448')
 					br
@@ -43,12 +53,12 @@ html
 				.col-md-12
 					h2#result.hidden
 			.row
-				.col-md-3
-				.col-md-3
-					button#start-experiment.btn.btn-primary.btn-block Start experiment
-				.col-md-3
-					button#stop-experiment.btn.btn-danger.btn-block Stop experiment
-				.col-md-3
+				.col-md-2
+				.col-md-4
+					button#start-experiment.btn.btn-primary.btn-block Start game
+				.col-md-4
+					button#stop-experiment.btn.btn-danger.btn-block Stop game
+				.col-md-2
 		script.
 			var id   = '#{id}';
 			var port = #{port};
